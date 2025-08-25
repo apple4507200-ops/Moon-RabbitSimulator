@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>月兔轉蛋模擬器</title>
+    <!-- 使用 Tailwind CSS 加速開發，確保美觀 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8 flex items-center justify-center min-h-screen">
+
+    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-4xl border border-gray-200">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-6 text-center">月兔轉蛋模擬器</h1>
+        <p class="text-sm text-gray-500 mb-8 text-center">
+            機率數據來自您提供的圖片，每抽獨立隨機。
+        </p>
+
+        <!-- 抽獎控制區塊 -->
+        <div class="mb-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+            <div class="flex items-center space-x-2">
+                <label for="draw-count" class="font-medium text-gray-700">選擇抽獎次數：</label>
+                <select id="draw-count" class="p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500">
+                    <option value="1">單抽 (1次)</option>
+                    <option value="10" selected>10抽</option>
+                    <option value="50">50抽</option>
+                    <option value="100">100抽</option>
+                    <option value="1000">1000抽</option>
+                    <option value="10000">10000抽</option>
+                </select>
+            </div>
+            <button id="draw-button" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-lg hover:bg-blue-700 transition-colors duration-200 transform hover:scale-105">
+                開始抽獎
+            </button>
+        </div>
+
+        <!-- 總計區塊 -->
+        <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">總計結果</h2>
+            <div id="total-results" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-700">
+                <!-- 總計結果將動態生成在此 -->
+            </div>
+            <p id="total-draws-count" class="text-lg font-semibold text-gray-900 mt-4 text-center">總計抽獎次數：0</p>
+        </div>
+
+        <!-- 歷史紀錄區塊 -->
+        <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 flex justify-between items-center">
+                本次抽獎結果
+                <button id="clear-button" class="text-sm text-red-500 hover:text-red-700 transition-colors duration-200">清除</button>
+            </h2>
+            <div id="latest-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-700">
+                <!-- 本次抽獎結果將動態生成在此 -->
+                <p id="latest-message" class="col-span-full text-center text-gray-400">請點擊「開始抽獎」按鈕</p>
+            </div>
+        </div>
+
+        <!-- 新增的分享教學區塊 -->
+        <div class="bg-blue-50 p-6 rounded-xl border border-blue-200 mt-8">
+            <h2 class="text-xl font-bold text-blue-800 mb-3">🚀 如何分享給朋友（製作可分享的網址）</h2>
+            <p class="text-gray-700 mb-3">要讓這個模擬器擁有獨立的網址，你需要將程式碼上傳到一個網頁託管服務。</p>
+            <ol class="list-decimal list-inside text-gray-700 space-y-4">
+                <li>
+                    **使用 GitHub Pages (推薦)**
+                    <ul class="list-disc list-inside ml-5 mt-2 space-y-1">
+                        <li>前往 <a href="https://github.com" class="text-blue-600 underline hover:text-blue-800">GitHub.com</a> 並註冊/登入。</li>
+                        <li>建立一個新的倉庫（repository），並給它一個名稱。</li>
+                        <li>將本程式碼區塊中的所有內容，從 `<!DOCTYPE html>` 到 `</html>`，複製到一個名為 `index.html` 的新檔案中。</li>
+                        <li>將這個檔案上傳到你剛建立的倉庫中。</li>
+                        <li>在倉庫的「Settings」中，找到「Pages」選項，將來源設定為 `main` 分支。</li>
+                        <li>GitHub Pages 會自動為你建立一個公開的網址，例如：`https://你的用戶名.github.io/你的倉庫名/`。你就可以分享這個連結了！</li>
+                    </ul>
+                </li>
+                <li>
+                    **使用 Glitch.com**
+                    <ul class="list-disc list-inside ml-5 mt-2 space-y-1">
+                        <li>前往 <a href="https://glitch.com" class="text-blue-600 underline hover:text-blue-800">Glitch.com</a>。</li>
+                        <li>點擊「New Project」並選擇「Hello Webpage」。</li>
+                        <li>將預設的 `index.html` 內容替換成你複製的程式碼。</li>
+                        <li>Glitch 會自動為你的專案生成一個網址，你可以點擊左上角的「Share」來找到它。</li>
+                    </ul>
+                </li>
+                <li>
+                    **離線分享（不需網址）**
+                    <ul class="list-disc list-inside ml-5 mt-2 space-y-1">
+                        <li>如果只想離線分享，請參照上一版的教學：將程式碼複製並儲存為 `.html` 檔案，然後將檔案直接傳送給你的朋友。</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const drawButton = document.getElementById('draw-button');
+            const drawCountSelect = document.getElementById('draw-count');
+            const latestResultsContainer = document.getElementById('latest-results');
+            const totalResultsContainer = document.getElementById('total-results');
+            const totalDrawsCountElement = document.getElementById('total-draws-count');
+            const clearButton = document.getElementById('clear-button');
+
+            let totalDraws = 0;
+            let totalCounts = {};
+
+            const gachaRates = {
+                // 機率以百分比表示
+                "(染)月兔武器(3D)隨機箱": 20.00,
+                "(染)月兔武器(7D)隨機箱": 15.00,
+                "(染)月兔武器(15D)隨機箱": 10.00,
+                "(染)月兔武器(30D)隨機箱": 5.00,
+                "(染)月兔武器(45D)隨機箱": 2.00,
+                "(染)月兔武器(永久)隨機箱": 0.50,
+                "(染)月兔武器(永久)全套禮盒": 0.01,
+                "月兔的魔咒(永久)": 0.50,
+                "高級補充劑(999瓶裝)": 6.00,
+                "皇家寵物餅乾禮盒(10T)": 9.00,
+                "黃金槌": 7.00,
+                "元素研磨防爆耳環": 10.00,
+                "元素研磨守護耳環": 10.00,
+                "守護方陣": 5.00
+            };
+
+            const items = Object.keys(gachaRates);
+            const weights = Object.values(gachaRates);
+
+            const specialItems = ["(染)月兔武器(永久)隨機箱", "(染)月兔武器(永久)全套禮盒", "月兔的魔咒(永久)"];
+
+            // 初始化總計結果
+            function initializeTotalCounts() {
+                totalCounts = {};
+                for (const item of items) {
+                    totalCounts[item] = 0;
+                }
+                updateTotalDisplay();
+            }
+
+            // 更新總計結果的顯示
+            function updateTotalDisplay() {
+                totalResultsContainer.innerHTML = '';
+                for (const item of items) {
+                    const count = totalCounts[item];
+                    const element = document.createElement('div');
+                    element.className = 'p-3 bg-white rounded-lg border border-gray-200 shadow-sm transition-all duration-200 hover:shadow-md';
+                    
+                    const isSpecial = specialItems.includes(item);
+                    
+                    element.innerHTML = `
+                        <p class="font-medium ${isSpecial ? 'text-red-600 font-bold' : 'text-gray-800'}">${item}</p>
+                        <p class="text-sm text-gray-600 mt-1">數量：<span class="font-semibold text-lg">${count}</span></p>
+                    `;
+                    totalResultsContainer.appendChild(element);
+                }
+                totalDrawsCountElement.textContent = `總計抽獎次數：${totalDraws}`;
+            }
+
+            // 執行抽獎
+            function performDraw(count) {
+                let currentDraws = {};
+                
+                // 執行隨機抽獎
+                for (let i = 0; i < count; i++) {
+                    const chosenItem = randomChoice(items, weights);
+                    if (!currentDraws[chosenItem]) {
+                        currentDraws[chosenItem] = 0;
+                    }
+                    if (!totalCounts[chosenItem]) {
+                        totalCounts[chosenItem] = 0;
+                    }
+                    currentDraws[chosenItem]++;
+                    totalCounts[chosenItem]++;
+                    totalDraws++;
+                }
+                
+                return currentDraws;
+            }
+
+            // 隨機選擇函式
+            function randomChoice(list, weights) {
+                const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+                let randomNum = Math.random() * totalWeight;
+
+                for (let i = 0; i < list.length; i++) {
+                    randomNum -= weights[i];
+                    if (randomNum <= 0) {
+                        return list[i];
+                    }
+                }
+                return list[list.length - 1]; // Fallback
+            }
+
+            // 渲染最新的抽獎結果
+            function renderLatestResults(results) {
+                latestResultsContainer.innerHTML = '';
+                if (Object.keys(results).length === 0) {
+                    latestResultsContainer.innerHTML = `<p id="latest-message" class="col-span-full text-center text-gray-400">本次抽獎沒有結果</p>`;
+                    return;
+                }
+
+                for (const item in results) {
+                    const count = results[item];
+                    const isSpecial = specialItems.includes(item);
+                    const element = document.createElement('div');
+                    element.className = 'p-3 bg-white rounded-lg border border-gray-200 shadow-sm transition-all duration-200 hover:shadow-md';
+                    
+                    let message = '';
+                    if (isSpecial) {
+                        message = `<p class="text-red-600 font-bold text-lg animate-pulse">恭喜！</p>`;
+                    }
+
+                    element.innerHTML = `
+                        ${message}
+                        <p class="font-medium ${isSpecial ? 'text-red-600 font-bold' : 'text-gray-800'}">${item}</p>
+                        <p class="text-sm text-gray-600 mt-1">數量：<span class="font-semibold text-lg">${count}</span></p>
+                    `;
+                    latestResultsContainer.appendChild(element);
+                }
+            }
+
+            // 抽獎按鈕點擊事件
+            drawButton.addEventListener('click', () => {
+                const count = parseInt(drawCountSelect.value, 10);
+                const results = performDraw(count);
+                renderLatestResults(results);
+                updateTotalDisplay();
+            });
+
+            // 清除按鈕點擊事件
+            clearButton.addEventListener('click', () => {
+                totalDraws = 0;
+                initializeTotalCounts();
+                latestResultsContainer.innerHTML = `<p id="latest-message" class="col-span-full text-center text-gray-400">請點擊「開始抽獎」按鈕</p>`;
+            });
+
+            // 初始顯示
+            initializeTotalCounts();
+        });
+    </script>
+</body>
+</html>
