@@ -12,6 +12,26 @@
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
+
+        /* 彈窗背景疊加層 */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.75);
+        }
+
+        /* 彈窗內容動畫 */
+        @keyframes popIn {
+            from {
+                transform: scale(0.8) translate(-50%, -50%);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1) translate(-50%, -50%);
+                opacity: 1;
+            }
+        }
+        .modal-content {
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
     </style>
 </head>
 <body class="bg-gray-100 p-8 flex items-center justify-center min-h-screen">
@@ -74,6 +94,20 @@
         </div>
     </div>
 
+    <!-- 彈窗模組 -->
+    <div id="popup-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+        <div class="bg-white p-8 rounded-xl shadow-2xl text-center max-w-lg w-full modal-content">
+            <h3 class="text-3xl font-bold text-red-600 mb-4">恭喜你！</h3>
+            <!-- 彈窗內容調整，使用 flexbox 讓物品名稱排版更美觀 -->
+            <div id="popup-message-container" class="flex flex-wrap justify-center items-center gap-2 mb-6">
+                <!-- 彈窗物品將動態生成在此 -->
+            </div>
+            <button id="close-button" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-lg hover:bg-blue-700 transition-colors duration-200 transform hover:scale-105">
+                關閉
+            </button>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const drawButton = document.getElementById('draw-button');
@@ -82,7 +116,10 @@
             const totalResultsContainer = document.getElementById('total-results');
             const totalDrawsCountElement = document.getElementById('total-draws-count');
             const clearButton = document.getElementById('clear-button');
-            const rateListContainer = document.getElementById('rate-list'); // 新增機率清單容器
+            const rateListContainer = document.getElementById('rate-list');
+            const popupModal = document.getElementById('popup-modal');
+            const popupMessageContainer = document.getElementById('popup-message-container'); // 更改為 container
+            const closeButton = document.getElementById('close-button');
 
             let totalDraws = 0;
             let totalCounts = {};
@@ -153,17 +190,35 @@
 
             // 執行抽獎
             function performDraw(count) {
-                let currentDraws = []; // 更改為陣列以儲存每一抽結果
+                let currentDraws = [];
+                let specialItemsFound = [];
                 
                 // 執行隨機抽獎
                 for (let i = 0; i < count; i++) {
                     const chosenItem = randomChoice(items, weights);
-                    currentDraws.push(chosenItem); // 將每一抽的結果加入陣列
+                    currentDraws.push(chosenItem);
                     if (!totalCounts[chosenItem]) {
                         totalCounts[chosenItem] = 0;
                     }
                     totalCounts[chosenItem]++;
                     totalDraws++;
+
+                    if (specialItems.includes(chosenItem)) {
+                        specialItemsFound.push(chosenItem);
+                    }
+                }
+
+                if (specialItemsFound.length > 0) {
+                    // 清空彈窗容器並動態新增物品
+                    popupMessageContainer.innerHTML = '';
+                    specialItemsFound.forEach(item => {
+                        const itemElement = document.createElement('span');
+                        itemElement.className = 'bg-yellow-100 text-yellow-800 text-sm font-semibold px-2 py-1 rounded-full border border-yellow-200';
+                        itemElement.textContent = item;
+                        popupMessageContainer.appendChild(itemElement);
+                    });
+                    
+                    popupModal.classList.remove('hidden');
                 }
                 
                 return currentDraws;
@@ -186,7 +241,7 @@
             // 渲染最新的抽獎結果
             function renderLatestResults(results) {
                 latestResultsContainer.innerHTML = '';
-                if (results.length === 0) { // 更改為檢查陣列長度
+                if (results.length === 0) {
                     latestResultsContainer.innerHTML = `<p id="latest-message" class="text-center text-gray-400">請點擊「開始抽獎」按鈕</p>`;
                     return;
                 }
@@ -194,7 +249,7 @@
                 const ul = document.createElement('ul');
                 ul.className = 'list-disc list-inside space-y-2 pl-4';
 
-                results.forEach(item => { // 遍歷每一抽的結果
+                results.forEach(item => {
                     const isSpecial = specialItems.includes(item);
                     const li = document.createElement('li');
                     li.className = `p-2 bg-white rounded-lg border border-gray-200 shadow-sm transition-all duration-200 hover:shadow-md ${isSpecial ? 'bg-yellow-50 text-red-600 font-bold' : 'text-gray-800'}`;
@@ -226,9 +281,14 @@
                 latestResultsContainer.innerHTML = `<p id="latest-message" class="text-center text-gray-400">請點擊「開始抽獎」按鈕</p>`;
             });
 
+            // 彈窗關閉按鈕點擊事件
+            closeButton.addEventListener('click', () => {
+                popupModal.classList.add('hidden');
+            });
+
             // 初始顯示
             initializeTotalCounts();
-            renderRateList(); // 首次載入時渲染機率清單
+            renderRateList();
         });
     </script>
 </body>
