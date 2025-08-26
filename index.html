@@ -13,24 +13,58 @@
             background-color: #f3f4f6;
         }
 
-        /* 彈窗背景疊加層 */
-        .modal-overlay {
-            background-color: rgba(0, 0, 0, 0.75);
+        /* 下拉式彈窗容器 */
+        .dropdown-modal-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 50;
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+            pointer-events: none; /* 預設不攔截滑鼠事件 */
+        }
+        
+        .dropdown-modal-container.active {
+            pointer-events: auto;
         }
 
-        /* 彈窗內容動畫 */
-        @keyframes popIn {
-            from {
-                transform: scale(0.8) translate(-50%, -50%);
-                opacity: 0;
-            }
-            to {
-                transform: scale(1) translate(-50%, -50%);
-                opacity: 1;
-            }
+        /* 彈窗內容滑動動畫 */
+        .dropdown-modal-content {
+            transform: translateY(-100%);
+            transition: transform 0.5s ease-out;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            max-height: 80vh; /* 限制最大高度 */
+            overflow-y: auto; /* 新增滾動條 */
         }
-        .modal-content {
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+        .dropdown-modal-container.active .dropdown-modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            transition: opacity 0.5s ease-out;
+            opacity: 0;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+        }
+        
+        /* 確保按鈕固定在底部 */
+        #popup-modal-footer {
+            position: sticky;
+            bottom: 0;
+            background-color: white;
+            padding-top: 1rem;
+            z-index: 10;
         }
     </style>
 </head>
@@ -49,6 +83,14 @@
         <!-- 主要模擬器區塊 -->
         <div class="lg:w-2/3">
             <h1 class="text-4xl font-extrabold text-gray-900 mb-6 text-center">月兔轉蛋模擬器</h1>
+
+            <!-- 總計區塊，移到最上方 -->
+            <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-8 flex justify-center items-center gap-6">
+                <p id="total-draws-count" class="text-lg font-semibold text-gray-900">總計抽獎次數：0</p>
+                <!-- 遊戲幣總花費顯示 -->
+                <p id="total-cost" class="text-lg font-semibold text-gray-900">總花費：0 遊戲幣</p>
+            </div>
+            
             <p class="text-sm text-gray-500 mb-8 text-center">
                 機率數據來自您提供的圖片，每抽獨立隨機。
             </p>
@@ -71,13 +113,12 @@
                 </button>
             </div>
 
-            <!-- 總計區塊 -->
+            <!-- 總計結果區塊 -->
             <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-8">
                 <h2 class="text-2xl font-bold text-gray-800 mb-4">總計結果</h2>
                 <div id="total-results" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-700">
                     <!-- 總計結果將動態生成在此 -->
                 </div>
-                <p id="total-draws-count" class="text-lg font-semibold text-gray-900 mt-4 text-center">總計抽獎次數：0</p>
             </div>
 
             <!-- 歷史紀錄區塊 -->
@@ -94,17 +135,19 @@
         </div>
     </div>
 
-    <!-- 彈窗模組 -->
-    <div id="popup-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
-        <div class="bg-white p-8 rounded-xl shadow-2xl text-center max-w-lg w-full modal-content">
+    <!-- 下拉式彈窗模組 -->
+    <div id="dropdown-modal" class="dropdown-modal-container">
+        <div class="dropdown-modal-content bg-white p-8 rounded-b-xl shadow-2xl text-center max-w-lg w-full">
             <h3 class="text-3xl font-bold text-red-600 mb-4">恭喜你！</h3>
-            <!-- 彈窗內容調整，使用 flexbox 讓物品名稱排版更美觀 -->
             <div id="popup-message-container" class="flex flex-wrap justify-center items-center gap-2 mb-6">
                 <!-- 彈窗物品將動態生成在此 -->
             </div>
-            <button id="close-button" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-lg hover:bg-blue-700 transition-colors duration-200 transform hover:scale-105">
-                關閉
-            </button>
+            <!-- 新增一個獨立的 footer 來固定按鈕 -->
+            <div id="popup-modal-footer">
+                <button id="close-button" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-lg hover:bg-blue-700 transition-colors duration-200 transform hover:scale-105">
+                    關閉
+                </button>
+            </div>
         </div>
     </div>
 
@@ -115,17 +158,27 @@
             const latestResultsContainer = document.getElementById('latest-results');
             const totalResultsContainer = document.getElementById('total-results');
             const totalDrawsCountElement = document.getElementById('total-draws-count');
+            const totalCostElement = document.getElementById('total-cost');
             const clearButton = document.getElementById('clear-button');
             const rateListContainer = document.getElementById('rate-list');
-            const popupModal = document.getElementById('popup-modal');
-            const popupMessageContainer = document.getElementById('popup-message-container'); // 更改為 container
+            const dropdownModal = document.getElementById('dropdown-modal');
+            const popupMessageContainer = document.getElementById('popup-message-container');
             const closeButton = document.getElementById('close-button');
 
             let totalDraws = 0;
             let totalCounts = {};
+            let totalCost = 0;
+
+            const drawCosts = {
+                '1': 10000000,
+                '10': 100000000,
+                '50': 500000000,
+                '100': 1000000000,
+                '1000': 10000000000,
+                '10000': 100000000000
+            };
 
             const gachaRates = {
-                // 機率以百分比表示
                 "(染)月兔武器(3D)隨機箱": 20.00,
                 "(染)月兔武器(7D)隨機箱": 15.00,
                 "(染)月兔武器(15D)隨機箱": 10.00,
@@ -144,8 +197,12 @@
 
             const items = Object.keys(gachaRates);
             const weights = Object.values(gachaRates);
-
             const specialItems = ["(染)月兔武器(永久)隨機箱", "(染)月兔武器(永久)全套禮盒", "月兔的魔咒(永久)"];
+
+            // 格式化數字，加上千分位逗號
+            function formatNumber(num) {
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
 
             // 渲染機率清單
             function renderRateList() {
@@ -172,8 +229,9 @@
             // 更新總計結果的顯示
             function updateTotalDisplay() {
                 totalResultsContainer.innerHTML = '';
-                for (const item of items) {
-                    const count = totalCounts[item];
+                const sortedItems = Object.entries(totalCounts).sort((a, b) => b[1] - a[1]);
+
+                sortedItems.forEach(([item, count]) => {
                     const element = document.createElement('div');
                     element.className = 'p-3 bg-white rounded-lg border border-gray-200 shadow-sm transition-all duration-200 hover:shadow-md';
                     
@@ -181,11 +239,13 @@
                     
                     element.innerHTML = `
                         <p class="font-medium ${isSpecial ? 'text-red-600 font-bold' : 'text-gray-800'}">${item}</p>
-                        <p class="text-sm text-gray-600 mt-1">數量：<span class="font-semibold text-lg">${count}</span></p>
+                        <p class="text-sm text-gray-600 mt-1">數量：<span class="font-semibold text-lg">${formatNumber(count)}</span></p>
                     `;
                     totalResultsContainer.appendChild(element);
-                }
-                totalDrawsCountElement.textContent = `總計抽獎次數：${totalDraws}`;
+                });
+
+                totalDrawsCountElement.textContent = `總計抽獎次數：${formatNumber(totalDraws)}`;
+                totalCostElement.textContent = `總花費：${formatNumber(totalCost)} 遊戲幣`;
             }
 
             // 執行抽獎
@@ -193,7 +253,6 @@
                 let currentDraws = [];
                 let specialItemsFound = [];
                 
-                // 執行隨機抽獎
                 for (let i = 0; i < count; i++) {
                     const chosenItem = randomChoice(items, weights);
                     currentDraws.push(chosenItem);
@@ -213,12 +272,13 @@
                     popupMessageContainer.innerHTML = '';
                     specialItemsFound.forEach(item => {
                         const itemElement = document.createElement('span');
-                        itemElement.className = 'bg-yellow-100 text-yellow-800 text-sm font-semibold px-2 py-1 rounded-full border border-yellow-200';
+                        itemElement.className = 'bg-yellow-100 text-yellow-800 text-sm font-semibold px-2 py-1 rounded-full border border-yellow-200 whitespace-nowrap';
                         itemElement.textContent = item;
                         popupMessageContainer.appendChild(itemElement);
                     });
                     
-                    popupModal.classList.remove('hidden');
+                    // 顯示下拉式彈窗
+                    dropdownModal.classList.add('active');
                 }
                 
                 return currentDraws;
@@ -269,6 +329,7 @@
             // 抽獎按鈕點擊事件
             drawButton.addEventListener('click', () => {
                 const count = parseInt(drawCountSelect.value, 10);
+                totalCost += drawCosts[count];
                 const results = performDraw(count);
                 renderLatestResults(results);
                 updateTotalDisplay();
@@ -277,13 +338,14 @@
             // 清除按鈕點擊事件
             clearButton.addEventListener('click', () => {
                 totalDraws = 0;
+                totalCost = 0;
                 initializeTotalCounts();
                 latestResultsContainer.innerHTML = `<p id="latest-message" class="text-center text-gray-400">請點擊「開始抽獎」按鈕</p>`;
             });
 
             // 彈窗關閉按鈕點擊事件
             closeButton.addEventListener('click', () => {
-                popupModal.classList.add('hidden');
+                dropdownModal.classList.remove('active');
             });
 
             // 初始顯示
