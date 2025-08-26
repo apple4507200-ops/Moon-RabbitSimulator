@@ -85,10 +85,10 @@
             <h1 class="text-4xl font-extrabold text-gray-900 mb-6 text-center">月兔轉蛋模擬器</h1>
 
             <!-- 總計區塊，移到最上方 -->
-            <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-8 flex justify-center items-center gap-6">
+            <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-8 flex flex-col sm:flex-row justify-center items-center gap-6">
                 <p id="total-draws-count" class="text-lg font-semibold text-gray-900">總計抽獎次數：0</p>
-                <!-- 遊戲幣總花費顯示 -->
-                <p id="total-cost" class="text-lg font-semibold text-gray-900">總花費：0 遊戲幣</p>
+                <!-- 遊戲幣與台幣總花費顯示 -->
+                <p id="total-cost" class="text-lg font-semibold text-gray-900">總花費：0 遊戲幣 / 0 台幣</p>
             </div>
             
             <p class="text-sm text-gray-500 mb-8 text-center">
@@ -131,6 +131,24 @@
                     <!-- 本次抽獎結果將動態生成在此 -->
                     <p id="latest-message" class="text-center text-gray-400">請點擊「開始抽獎」按鈕</p>
                 </div>
+            </div>
+            
+            <!-- 新增台幣計算說明區塊 -->
+            <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 mt-8">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">台幣計算方式</h2>
+                <p class="text-sm text-gray-700">
+                    本模擬器將遊戲幣換算為台幣的公式為：
+                </p>
+                <div class="bg-gray-100 rounded-lg p-4 mt-2">
+                    <pre class="whitespace-pre-wrap text-sm text-gray-800"><code>// 遊戲幣與台幣的匯率
+const TWD_RATE = 60000;
+
+// 計算總台幣花費
+const totalTWD = totalCost / TWD_RATE;</code></pre>
+                </div>
+                <p class="text-sm text-gray-700 mt-2">
+                    其中，`totalCost` 為遊戲幣總花費，`TWD_RATE` 為設定的匯率（$60,000$ 遊戲幣換 $1$ 台幣）。
+                </p>
             </div>
         </div>
     </div>
@@ -177,6 +195,9 @@
                 '1000': 10000000000,
                 '10000': 100000000000
             };
+            
+            // 遊戲幣與台幣的匯率
+            const TWD_RATE = 60000;
 
             const gachaRates = {
                 "(染)月兔武器(3D)隨機箱": 20.00,
@@ -244,8 +265,10 @@
                     totalResultsContainer.appendChild(element);
                 });
 
+                // 計算台幣總花費並更新顯示
+                const totalTWD = totalCost / TWD_RATE;
                 totalDrawsCountElement.textContent = `總計抽獎次數：${formatNumber(totalDraws)}`;
-                totalCostElement.textContent = `總花費：${formatNumber(totalCost)} 遊戲幣`;
+                totalCostElement.textContent = `總花費：${formatNumber(totalCost)} 遊戲幣 / ${formatNumber(totalTWD.toFixed(2))} 台幣`;
             }
 
             // 執行抽獎
