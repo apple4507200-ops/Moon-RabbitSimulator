@@ -82,9 +82,16 @@
         
         <!-- 主要模擬器區塊 -->
         <div class="lg:w-2/3">
-            <h1 class="text-4xl font-extrabold text-gray-900 mb-6 text-center">月兔轉蛋模擬器</h1>
+            <h1 class="text-4xl font-extrabold text-gray-900 mb-2 text-center">月兔轉蛋模擬器</h1>
 
-            <!-- 總計區塊，移到最上方 -->
+            <!-- 新增的台幣說明區塊，移到最上方 -->
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 text-center">
+                <p class="text-sm text-gray-700">
+                    台幣計算為按照比值1:6萬
+                </p>
+            </div>
+
+            <!-- 總計區塊 -->
             <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 mb-8 flex flex-col sm:flex-row justify-center items-center gap-6">
                 <p id="total-draws-count" class="text-lg font-semibold text-gray-900">總計抽獎次數：0</p>
                 <!-- 遊戲幣與台幣總花費顯示 -->
@@ -133,8 +140,8 @@
                 </div>
             </div>
             
-            <!-- 新增台幣計算說明區塊 -->
-            <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 mt-8">
+            <!-- 原先的台幣計算說明區塊，現在不需要了，但保留在程式碼中以便參考 -->
+            <!-- <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 mt-8">
                 <h2 class="text-xl font-bold text-gray-800 mb-4">台幣計算方式</h2>
                 <p class="text-sm text-gray-700">
                     本模擬器將遊戲幣換算為台幣的公式為：
@@ -148,8 +155,10 @@ const totalTWD = totalCost / TWD_RATE;</code></pre>
                 </div>
                 <p class="text-sm text-gray-700 mt-2">
                     其中，`totalCost` 為遊戲幣總花費，`TWD_RATE` 為設定的匯率（$60,000$ 遊戲幣換 $1$ 台幣）。
+                    <br>
+                    台幣計算為按照當前遊戲比值1台幣:6萬。
                 </p>
-            </div>
+            </div> -->
         </div>
     </div>
 
