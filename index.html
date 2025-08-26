@@ -274,10 +274,10 @@ const totalTWD = totalCost / TWD_RATE;</code></pre>
                     totalResultsContainer.appendChild(element);
                 });
 
-                // 計算台幣總花費並更新顯示
-                const totalTWD = totalCost / TWD_RATE;
+                // 計算台幣總花費並更新顯示，使用 Math.round 去除小數點
+                const totalTWD = Math.round(totalCost / TWD_RATE);
                 totalDrawsCountElement.textContent = `總計抽獎次數：${formatNumber(totalDraws)}`;
-                totalCostElement.textContent = `總花費：${formatNumber(totalCost)} 遊戲幣 / ${formatNumber(totalTWD.toFixed(2))} 台幣`;
+                totalCostElement.textContent = `總花費：${formatNumber(totalCost)} 遊戲幣 / ${formatNumber(totalTWD)} 台幣`;
             }
 
             // 執行抽獎
